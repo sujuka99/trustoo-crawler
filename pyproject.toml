@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "trustoo-crawler"
+version = "0.1.0"
+description = ""
+authors = ["Ivan Yordanov <hi@ivanyordanov.me>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+scrapy = "^2.11.2"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+ruff = "^0.4.9"
+pyright = "^1.1.367"
+pre-commit = "^3.7.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
