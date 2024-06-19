@@ -14,10 +14,10 @@ NEWSPIDER_MODULE = "trustoo_crawler.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = "trustoo_crawler (+http://www.yourdomain.com)"
+USER_AGENT = "Mozilla"
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
