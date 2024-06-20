@@ -1,12 +1,15 @@
-# Define here the models for your scraped items
-#
-# See documentation in:
-# https://docs.scrapy.org/en/latest/topics/items.html
-
-import scrapy
+from scrapy import Field, Item
 
 
-class TrustooCrawlerItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class BusinessItem(Item):
+    name = Field()
+    location = Field()
+    description = Field()
+    phone = Field()
+    website = Field()
+    email = Field()
+    social_media = Field()
+    hourly_rate = Field()
+    payment_options = Field()
+    certificates = Field()
+    other_information = Field()
