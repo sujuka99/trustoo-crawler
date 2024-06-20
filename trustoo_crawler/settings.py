@@ -13,6 +13,8 @@ SPIDER_MODULES = ["trustoo_crawler.spiders"]
 NEWSPIDER_MODULE = "trustoo_crawler.spiders"
 
 
+FEEDS = {"test.csv": {"format": "csv", "overwrite": True}}
+
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = "Mozilla"
 
