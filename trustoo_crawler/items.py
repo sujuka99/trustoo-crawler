@@ -13,3 +13,4 @@ class BusinessItem(Item):
     payment_options = Field()
     certificates = Field()
     other_information = Field()
+    working_time = Field()
