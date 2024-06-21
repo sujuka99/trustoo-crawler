@@ -43,7 +43,10 @@ class GoudenGidsXPaths(StrEnum):
     SOCIAL_MEDIA = f"{XPATH_CONTAINS.format(element="div", attr="@class", val="flex flex-wrap social-media-wrap")}/a/@href"
     HOURLY_RATE = "/html/body/main/div[3]/div/div/div[3]/div/div/div[3]/div/div[13]/ul/li/span"  # TODO
     PAYMENT_OPTIONS = "/html/body/main/div[3]/div/div/div[3]/div/div/div[5]/div"  # TODO
-    CERTIFICATES = "/html/body/main/div[3]/div/div/div[3]/div/div/div[4]/div/ul"  # TODO
+    CERTIFICATES = (
+        f"{XPATH_CONTAINS.format(element="div", attr="h3", val="Certificeringen")}"
+        "//li/span/text()"
+    )
     OTHER_INFORMATION = "/html/body/main/div[3]/div/div/div[3]/div/div/div[3]/div"  # TODO(Ivan Yordanov): Break down into more useful info
     WORKING_TIMES = XPATH_CONTAINS.format(
         element="div", attr="./h3", val="Openingsuren"
@@ -111,7 +114,7 @@ class GoudenGidsLawyersSpider(Spider):
             ),
             # hourly_rate=self.get_element_text(response, GoudenGidsXPaths.HOURLY_RATE),
             # payment_options=self.get_element_text(response, GoudenGidsXPaths.PAYMENT_OPTIONS),
-            # certificates=self.get_element_text(response, GoudenGidsXPaths.CERTIFICATES),
+            certificates=self.get_element_text(response, GoudenGidsXPaths.CERTIFICATES),
             # other_information=self.get_element_text(response, GoudenGidsXPaths.OTHER_INFORMATION),
             # working_time=self.get_element_text(response, GoudenGidsXPaths.WORKING_TIMES),
             working_time=self.get_working_times(response),
@@ -122,7 +125,7 @@ class GoudenGidsLawyersSpider(Spider):
         return response.xpath(f"normalize-space({xpath})").get() or ""
 
     def get_element_texts(self, response: HtmlResponse, xpath: str) -> list[str]:
-        return response.xpath(xpath).getall() or []
+        return [el.strip() for el in response.xpath(xpath).getall()] or []
 
     def get_working_time_day(self, response: HtmlResponse, day: WeekDays) -> str:
         return (

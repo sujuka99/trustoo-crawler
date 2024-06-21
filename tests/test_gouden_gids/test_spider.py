@@ -129,7 +129,17 @@ class TestGoudenGidsLawyersSpider:
                 ],
                 id="working-times",
             ),
+            pytest.param(
+                LawyerResponse.HENDRICKS,
+                f"{GoudenGidsXPaths.CERTIFICATES}",
+                [
+                    "Branche organisatie:VAJN",
+                    "Gecertificeerd door:High Trust Raad voor Rechtsbijstand",
+                    "Overig:.",
+                ],
+                id="certificates",
+            ),
         ],
     )
     def test_xpath(self, response: LawyerResponse, xpath: str, expected: str):
-        assert response.value.xpath(xpath).getall() == expected
+        assert [el.strip() for el in response.value.xpath(xpath).getall()] == expected
