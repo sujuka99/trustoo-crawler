@@ -10,6 +10,7 @@ class WorkingTimeItem(Item):
     saturday = Field()
     sunday = Field()
 
+
 class BusinessItem(Item):
     name = Field()
     location = Field()
