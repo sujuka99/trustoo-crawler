@@ -98,6 +98,37 @@ class TestGoudenGidsLawyersSpider:
                 ["+31493321872"],
                 id="phone",
             ),
+            pytest.param(
+                LawyerResponse.HENDRICKS,
+                f"normalize-space({GoudenGidsXPaths.WEBSITE})",
+                ["https://www.advocaathendriks.nl"],
+                id="website",
+            ),
+            pytest.param(
+                LawyerResponse.BAKER_AND_MCKENZIE,
+                f"normalize-space({GoudenGidsXPaths.EMAIL})",
+                ["info.amsterdam@bakermckenzie.com"],
+                id="email",
+            ),
+            pytest.param(
+                LawyerResponse.BAKER_AND_MCKENZIE,
+                f"{GoudenGidsXPaths.SOCIAL_MEDIA}",
+                [
+                    "https://www.facebook.com/BakerMcKenzieAmsterdam/",
+                    "https://twitter.com/BakerMcKenzieNL",
+                    "https://www.instagram.com/bakermckenzie_amsterdam",
+                    "https://www.linkedin.com/company/baker_mckenzie_amsterdam/",
+                ],
+                id="social",
+            ),
+            pytest.param(
+                LawyerResponse.HENDRICKS,
+                f"normalize-space({GoudenGidsXPaths.WORKING_TIMES})",
+                [
+                    "Openingsuren Nu geopend - 9:00 - 17:30 Maandag 9:00 - 17:30 Dinsdag 9:00 - 17:30 Woensdag 9:00 - 17:30 Donderdag 9:00 - 17:30 Vrijdag 9:00 - 17:30"
+                ],
+                id="working-times",
+            ),
         ],
     )
     def test_xpath(self, response: LawyerResponse, xpath: str, expected: str):
