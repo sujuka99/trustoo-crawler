@@ -1,6 +1,15 @@
 from scrapy import Field, Item
 
 
+class WorkingTimeItem(Item):
+    monday = Field()
+    tuesday = Field()
+    wednesday = Field()
+    thursday = Field()
+    friday = Field()
+    saturday = Field()
+    sunday = Field()
+
 class BusinessItem(Item):
     name = Field()
     location = Field()
