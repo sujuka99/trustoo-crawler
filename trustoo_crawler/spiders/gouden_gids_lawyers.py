@@ -21,6 +21,12 @@ WEEKDAYS = (
 XPATH_CONTAINS = (
     "//{element}[contains(concat(' ', normalize-space({attr}), ' '), '{val}')]"
 )
+XPATH_IF = (
+    "concat("
+    "   substring({true}, 1, number({condition}) * string-length({true}))"
+    "   substring({false}, 1, number(not({condition})) * string-length({false}))"
+    ")"
+)
 
 
 class WeekDays(StrEnum):
@@ -42,7 +48,10 @@ class GoudenGidsXPaths(StrEnum):
     EMAIL = f"{XPATH_CONTAINS.format(element="div", attr="@data-ta", val="EmailActionClick")}/@data-js-value"
     SOCIAL_MEDIA = f"{XPATH_CONTAINS.format(element="div", attr="@class", val="flex flex-wrap social-media-wrap")}/a/@href"
     HOURLY_RATE = "/html/body/main/div[3]/div/div/div[3]/div/div/div[3]/div/div[13]/ul/li/span"  # TODO
-    PAYMENT_OPTIONS = "/html/body/main/div[3]/div/div/div[3]/div/div/div[5]/div"  # TODO
+    PAYMENT_OPTIONS = (
+        f"{XPATH_CONTAINS.format(element="div", attr="h3", val="Betaalmogelijkheden")}"
+        f"//li/@title"
+    )
     CERTIFICATES = (
         f"{XPATH_CONTAINS.format(element="div", attr="h3", val="Certificeringen")}"
         "//li/span/text()"
@@ -113,10 +122,11 @@ class GoudenGidsLawyersSpider(Spider):
                 response, GoudenGidsXPaths.SOCIAL_MEDIA
             ),
             # hourly_rate=self.get_element_text(response, GoudenGidsXPaths.HOURLY_RATE),
-            # payment_options=self.get_element_text(response, GoudenGidsXPaths.PAYMENT_OPTIONS),
+            payment_options=self.get_element_texts(
+                response, GoudenGidsXPaths.PAYMENT_OPTIONS
+            ),
             certificates=self.get_element_text(response, GoudenGidsXPaths.CERTIFICATES),
             # other_information=self.get_element_text(response, GoudenGidsXPaths.OTHER_INFORMATION),
-            # working_time=self.get_element_text(response, GoudenGidsXPaths.WORKING_TIMES),
             working_time=self.get_working_times(response),
         )
         yield business_item

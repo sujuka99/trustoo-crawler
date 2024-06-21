@@ -23,6 +23,10 @@ class LawyerResponse(Enum):
         Path(f"{RESPONSES_PATH}/hendricks_short_description.html"),
         "https://www.goudengids.nl/nl/bedrijf/Deurne/L145578951/Advocatenkantoor+Hendriks/",
     )
+    BREEWEL = read_response_from_file(
+        Path(f"{RESPONSES_PATH}/breewel_payment_options.html"),
+        "https://www.goudengids.nl/nl/bedrijf/Bergen+op+Zoom/L146093845/Breewel+Advocatuur/",
+    )
 
 
 class TestGoudenGidsLawyersSpider:
@@ -138,6 +142,16 @@ class TestGoudenGidsLawyersSpider:
                     "Overig:.",
                 ],
                 id="certificates",
+            ),
+            pytest.param(
+                LawyerResponse.BREEWEL,
+                f"{GoudenGidsXPaths.PAYMENT_OPTIONS}",
+                [
+                    "Bank / giro",
+                    "Contant",
+                    "Factuur",
+                ],
+                id="payment-options",
             ),
         ],
     )
