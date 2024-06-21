@@ -4,25 +4,50 @@ from enum import StrEnum
 from scrapy import Request, Spider
 from scrapy.http import HtmlResponse
 
-from trustoo_crawler.items import BusinessItem
+from trustoo_crawler.items import BusinessItem, WorkingTimeItem
 
 BASE_URL = "https://www.goudengids.nl"
 START_URL = "https://www.goudengids.nl/nl/bedrijven/advocaten/"
 PAGE_URL = "https://www.goudengids.nl/nl/zoeken/advocaten/"
+WEEKDAYS = ("Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag", "Zondag")
+XPATH_CONTAINS = "//{element}[contains(concat(' ', normalize-space({attr}), ' '), '{val}')]"
+
+class WeekDays(StrEnum):
+    MONDAY = "Maandag"
+    TUESDAY = "Dinsdag"
+    WEDNESDAY = "Woensdag"
+    THURSDAY = "Donderdag"
+    FRIDAY = "Vrijdag"
+    SATURDAY = "Zaterdag"
+    SUNDAY = "Zondag"
 
 class GoudenGidsXPaths(StrEnum):
-        NAME = "//h1[contains(concat(' ', normalize-space(@itemprop), ' '), 'name')]"
-        LOCATION = "//span[contains(concat(' ', normalize-space(@itemprop), ' '), 'address')]"
-        DESCRIPTION = "/html/body/main/div[3]/div/div/div[1]/div[4]"  # TODO
-        PHONE = "//a[contains(concat(' ', normalize-space(@data-ta), ' '), 'PhoneButtonClick')]"
-        WEBSITE = "//div[contains(concat(' ', normalize-space(@data-ta), ' '), 'WebsiteActionClick')]/@data-js-value"
-        EMAIL = "//div[contains(concat(' ', normalize-space(@data-ta), ' '), 'EmailActionClick')]/@data-js-value"
-        SOCIAL_MEDIA = "//div[contains(concat(' ', normalize-space(@class), ' '), 'flex flex-wrap social-media-wrap')]/@href"
-        HOURLY_RATE = "/html/body/main/div[3]/div/div/div[3]/div/div/div[3]/div/div[13]/ul/li/span"  # TODO
-        PAYMENT_OPTIONS = "/html/body/main/div[3]/div/div/div[3]/div/div/div[5]/div"  # TODO
-        CERTIFICATES = "/html/body/main/div[3]/div/div/div[3]/div/div/div[4]/div/ul"  # TODO
-        OTHER_INFORMATION = "/html/body/main/div[3]/div/div/div[3]/div/div/div[3]/div"  # TODO(Ivan Yordanov): Break down into more useful info
-        WORKING_TIME = "//div[contains(concat(' ', normalize-space(@class), ' '), 'flex mb-2.5 opening-hours')]"
+    NAME = XPATH_CONTAINS.format(element="h1", attr="@itemprop", val="name")
+    LOCATION = XPATH_CONTAINS.format(element="span", attr="@itemprop", val="address")
+    DESCRIPTION = "/html/body/main/div[3]/div/div/div[1]/div[4]"  # TODO
+    PHONE = XPATH_CONTAINS.format(element="a", attr="@data-ta", val="PhoneButtonClick")
+    WEBSITE = f"{XPATH_CONTAINS.format(element="div", attr="@data-ta", val="WebsiteActionClick")}/@data-js-value"
+    EMAIL = f"{XPATH_CONTAINS.format(element="div", attr="@data-ta", val="EmailActionClick")}/@data-js-value"
+    SOCIAL_MEDIA = f"{XPATH_CONTAINS.format(element="div", attr="@class", val="flex flex-wrap social-media-wrap")}/@href"
+    HOURLY_RATE = "/html/body/main/div[3]/div/div/div[3]/div/div/div[3]/div/div[13]/ul/li/span"  # TODO
+    PAYMENT_OPTIONS = "/html/body/main/div[3]/div/div/div[3]/div/div/div[5]/div"  # TODO
+    CERTIFICATES = "/html/body/main/div[3]/div/div/div[3]/div/div/div[4]/div/ul"  # TODO
+    OTHER_INFORMATION = "/html/body/main/div[3]/div/div/div[3]/div/div/div[3]/div"  # TODO(Ivan Yordanov): Break down into more useful info
+    WORKING_TIMES = XPATH_CONTAINS.format(element="div", attr="./h3", val="Openingsuren")
+    WORKING_DAY = (
+        f"{XPATH_CONTAINS.format(element="div", attr="./h3", val="Openingsuren")}"
+        f"{XPATH_CONTAINS.format(element="div", attr="div/text()", val="{day}")}"
+    )
+    WORKING_TIME_AM = (
+        f"{XPATH_CONTAINS.format(element="div", attr="./h3", val="Openingsuren")}"
+        f"{XPATH_CONTAINS.format(element="div", attr="div/text()", val="{day}")}"
+        f"{XPATH_CONTAINS.format(element="div", attr="@class", val="oh-table__am whitespace-nowrap mr-1 md:mr-3")}"
+    )
+    WORKING_TIME_PM = (
+        f"{XPATH_CONTAINS.format(element="div", attr="./h3", val="Openingsuren")}"
+        f"{XPATH_CONTAINS.format(element="div", attr="div/text()", val="{day}")}"
+        f"{XPATH_CONTAINS.format(element="div", attr="@class", val="oh-table__pm whitespace-nowrap")}"
+    )
 
 class GoudenGidsLawyersSpider(Spider):
 
@@ -49,28 +74,39 @@ class GoudenGidsLawyersSpider(Spider):
             yield Request(BASE_URL + url, callback=self.parse_business_page)
 
     def parse_business_page(self, response: HtmlResponse) -> Iterator[BusinessItem]:
-        """Yield item containing all scraped details bout a business"""
+        """Yield item containing all scraped details bout a business."""
         self.log(response.url)
         self.log(response.status)
         business_item = BusinessItem(
             name=self.get_element_text(response, GoudenGidsXPaths.NAME),
-            location=self.get_element_text_concat_list(response, GoudenGidsXPaths.LOCATION),
+            location=self.get_element_text(response, GoudenGidsXPaths.LOCATION),
             # description=self.get_element_text(response, GoudenGidsXPaths.DESCRIPTION),
-            phone=self.get_element_text_concat_list(response, GoudenGidsXPaths.PHONE),
+            phone=self.get_element_text(response, GoudenGidsXPaths.PHONE),
             website=self.get_element_text(response, GoudenGidsXPaths.WEBSITE),
             email=self.get_element_text(response, GoudenGidsXPaths.EMAIL),
-            social_media=self.get_element_text(response, GoudenGidsXPaths.SOCIAL_MEDIA),
+            social_media=self.get_element_text(response, GoudenGidsXPaths.SOCIAL_MEDIA),  # TODO(Ivan Yordanov): Make it a list.
             # hourly_rate=self.get_element_text(response, GoudenGidsXPaths.HOURLY_RATE),
             # payment_options=self.get_element_text(response, GoudenGidsXPaths.PAYMENT_OPTIONS),
             # certificates=self.get_element_text(response, GoudenGidsXPaths.CERTIFICATES),
             # other_information=self.get_element_text(response, GoudenGidsXPaths.OTHER_INFORMATION),
-            working_time=self.get_element_text(response, GoudenGidsXPaths.WORKING_TIME),
+            # working_time=self.get_element_text(response, GoudenGidsXPaths.WORKING_TIMES),
+            working_time = self.get_working_times(response),
         )
         yield business_item
 
     def get_element_text(self, response: HtmlResponse, xpath: str) -> str:
         return response.xpath(f"normalize-space({xpath})").get() or ""
 
-    def get_element_text_concat_list(self, response: HtmlResponse, xpath: str) -> str:
-        return " ".join(response.xpath(f"normalize-space({xpath})").getall()) or ""
+    def get_working_time_day(self, response: HtmlResponse, day: WeekDays) -> str:
+        return response.xpath(f"normalize-space({GoudenGidsXPaths.WORKING_DAY.format(day=day)})").get() or ""
 
+    def get_working_times(self, response: HtmlResponse) -> WorkingTimeItem:
+        return WorkingTimeItem(
+            monday=self.get_working_time_day(response, WeekDays.MONDAY),
+            tuesday=self.get_working_time_day(response, WeekDays.TUESDAY),
+            wednesday=self.get_working_time_day(response, WeekDays.WEDNESDAY),
+            thursday=self.get_working_time_day(response, WeekDays.THURSDAY),
+            friday=self.get_working_time_day(response, WeekDays.FRIDAY),
+            saturday=self.get_working_time_day(response, WeekDays.SATURDAY),
+            sunday=self.get_working_time_day(response, WeekDays.SUNDAY),
+        )
