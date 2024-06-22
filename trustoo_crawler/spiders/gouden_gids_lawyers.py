@@ -85,6 +85,11 @@ class GoudenGidsXPaths(StrEnum):
     )
     PARKING_INFO_SECTION_NAME = "normalize-space(span)"
     PARKING_INFO_SECTION_VALUE = "text()"
+    ECONOMIC_DATA = (
+        f"{XPATH_CONTAINS.format(element="div", attr="@id", val="economic-data")}//li"
+    )
+    ECONOMI_DATA_SECTION_NAME = "normalize-space(span)"
+    ECONOMI_DATA_SECTION_VALUE = "text()"
 
 
 class GoudenGidsLawyersSpider(Spider):
@@ -139,13 +144,21 @@ class GoudenGidsLawyersSpider(Spider):
                 GoudenGidsXPaths.OTHER_INFORMATION_SECTION_VALUE,
             ),
             working_time=self.get_working_times(response),
+            # TODO(Ivan Yordanov): Broken because the content is loaded dynamically
+            # Try to get the data from seety.co/nl by using the available details
+            # about location.
             parking_info=self.get_other_information(
                 response,
                 GoudenGidsXPaths.PARKING_INFO,
                 GoudenGidsXPaths.PARKING_INFO_SECTION_NAME,
                 GoudenGidsXPaths.PARKING_INFO_SECTION_VALUE,
             ),
-            economic_data="",
+            economic_data=self.get_other_information(
+                response,
+                GoudenGidsXPaths.ECONOMIC_DATA,
+                GoudenGidsXPaths.ECONOMI_DATA_SECTION_NAME,
+                GoudenGidsXPaths.ECONOMI_DATA_SECTION_VALUE,
+            ),
         )
         yield business_item
 

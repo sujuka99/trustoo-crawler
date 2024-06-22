@@ -179,6 +179,47 @@ class TestGoudenGidsLawyersSpider:
                 ["Voetgangerszone", "0:00-24:00"],
                 id="parking-info-section-value",
             ),
+            pytest.param(
+                LawyerResponse.BAKER_AND_MCKENZIE.value,
+                f"{GoudenGidsXPaths.ECONOMIC_DATA}",
+                [
+                    '<li class="block mb-2 flex justify-between"><span '
+                    'class="font-semibold">KVK-nummer:</span> 34276539</li>',
+                    '<li class="block mb-2 flex justify-between"><span '
+                    'class="font-semibold">Oprichtingsdatum:</span> 18/6/2007</li>',
+                    '<li class="block mb-2 flex justify-between"><span '
+                    'class="font-semibold">Aantal werknemers:</span> 1</li>',
+                    '<li class="block mb-2 flex justify-between"><span '
+                    'class="font-semibold">Status:</span> Actief</li>',
+                ],
+                id="economic-data",
+            ),
+            pytest.param(
+                LawyerResponse.BAKER_AND_MCKENZIE.value.xpath(
+                    GoudenGidsXPaths.ECONOMIC_DATA
+                ),
+                f"{GoudenGidsXPaths.ECONOMI_DATA_SECTION_NAME}",
+                [
+                    "KVK-nummer:",
+                    "Oprichtingsdatum:",
+                    "Aantal werknemers:",
+                    "Status:",
+                ],
+                id="economic-data-section-name",
+            ),
+            pytest.param(
+                LawyerResponse.BAKER_AND_MCKENZIE.value.xpath(
+                    GoudenGidsXPaths.ECONOMIC_DATA
+                ),
+                f"{GoudenGidsXPaths.ECONOMI_DATA_SECTION_VALUE}",
+                [
+                    "34276539",
+                    "18/6/2007",
+                    "1",
+                    "Actief",
+                ],
+                id="economic-data-section-value",
+            ),
         ],
     )
     def test_xpath(self, response: HtmlResponse, xpath: str, expected: str):
