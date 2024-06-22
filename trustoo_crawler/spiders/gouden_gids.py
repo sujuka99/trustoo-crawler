@@ -11,7 +11,7 @@ from trustoo_crawler.utils import WeekDays
 BASE_URL = "https://www.goudengids.nl"
 START_URL = "https://www.goudengids.nl/nl/bedrijven/advocaten/"
 PAGE_URL = "https://www.goudengids.nl/nl/zoeken/advocaten/"
-XPATH_CONTAINS = (
+XPATH_CONTAINS = (  # Find element that has a certain attribute of specific value
     "//{element}[contains(concat(' ', normalize-space({attr}), ' '), '{val}')]"
 )
 
@@ -56,6 +56,9 @@ class GoudenGidsXPaths(StrEnum):
     )
     ECONOMIC_DATA_SECTION_NAME = "normalize-space(span)"
     ECONOMIC_DATA_SECTION_VALUE = "text()"
+    LOGO_SRC = (
+        f"{XPATH_CONTAINS.format(element="img", attr="@data-yext", val="logo")}/@src"
+    )
 
 
 class GoudenGidsSpider(Spider):
@@ -125,6 +128,7 @@ class GoudenGidsSpider(Spider):
                 GoudenGidsXPaths.ECONOMIC_DATA_SECTION_NAME,
                 GoudenGidsXPaths.ECONOMIC_DATA_SECTION_VALUE,
             ),
+            logo=self.get_element_text(response, GoudenGidsXPaths.LOGO_SRC),
         )
         yield business_item
 

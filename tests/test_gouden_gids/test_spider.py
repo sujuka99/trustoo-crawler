@@ -116,7 +116,7 @@ class TestGoudenGidsSpider:
             ),
             pytest.param(
                 LawyerResponse.BAKER_AND_MCKENZIE.value,
-                f"{GoudenGidsXPaths.SOCIAL_MEDIA}",
+                GoudenGidsXPaths.SOCIAL_MEDIA,
                 [
                     "https://www.facebook.com/BakerMcKenzieAmsterdam/",
                     "https://twitter.com/BakerMcKenzieNL",
@@ -133,7 +133,7 @@ class TestGoudenGidsSpider:
             ),
             pytest.param(
                 LawyerResponse.HENDRICKS.value,
-                f"{GoudenGidsXPaths.CERTIFICATES}",
+                GoudenGidsXPaths.CERTIFICATES,
                 [
                     "Branche organisatie:VAJN",
                     "Gecertificeerd door:High Trust Raad voor Rechtsbijstand",
@@ -143,7 +143,7 @@ class TestGoudenGidsSpider:
             ),
             pytest.param(
                 LawyerResponse.BREEWEL.value,
-                f"{GoudenGidsXPaths.PAYMENT_OPTIONS}",
+                GoudenGidsXPaths.PAYMENT_OPTIONS,
                 [
                     "Bank / giro",
                     "Contant",
@@ -153,7 +153,7 @@ class TestGoudenGidsSpider:
             ),
             pytest.param(
                 LawyerResponse.BAKER_AND_MCKENZIE.value,
-                f"{GoudenGidsXPaths.PARKING_INFO}",
+                GoudenGidsXPaths.PARKING_INFO,
                 [
                     '<li class="block mb-2 flex justify-between"><span class="font-semibold">Soort parking:</span> Voetgangerszone</li>',
                     '<li class="block mb-2 flex justify-between"><span class="font-semibold">Uren:</span> 0:00-24:00</li>',
@@ -164,7 +164,7 @@ class TestGoudenGidsSpider:
                 LawyerResponse.BAKER_AND_MCKENZIE.value.xpath(
                     GoudenGidsXPaths.PARKING_INFO
                 ),
-                f"{GoudenGidsXPaths.PARKING_INFO_SECTION_NAME}",
+                GoudenGidsXPaths.PARKING_INFO_SECTION_NAME,
                 ["Soort parking:", "Uren:"],
                 id="parking-info-section-name",
             ),
@@ -172,13 +172,13 @@ class TestGoudenGidsSpider:
                 LawyerResponse.BAKER_AND_MCKENZIE.value.xpath(
                     GoudenGidsXPaths.PARKING_INFO
                 ),
-                f"{GoudenGidsXPaths.PARKING_INFO_SECTION_VALUE}",
+                GoudenGidsXPaths.PARKING_INFO_SECTION_VALUE,
                 ["Voetgangerszone", "0:00-24:00"],
                 id="parking-info-section-value",
             ),
             pytest.param(
                 LawyerResponse.BAKER_AND_MCKENZIE.value,
-                f"{GoudenGidsXPaths.ECONOMIC_DATA}",
+                GoudenGidsXPaths.ECONOMIC_DATA,
                 [
                     '<li class="block mb-2 flex justify-between"><span '
                     'class="font-semibold">KVK-nummer:</span> 34276539</li>',
@@ -195,7 +195,7 @@ class TestGoudenGidsSpider:
                 LawyerResponse.BAKER_AND_MCKENZIE.value.xpath(
                     GoudenGidsXPaths.ECONOMIC_DATA
                 ),
-                f"{GoudenGidsXPaths.ECONOMIC_DATA_SECTION_NAME}",
+                GoudenGidsXPaths.ECONOMIC_DATA_SECTION_NAME,
                 [
                     "KVK-nummer:",
                     "Oprichtingsdatum:",
@@ -208,7 +208,7 @@ class TestGoudenGidsSpider:
                 LawyerResponse.BAKER_AND_MCKENZIE.value.xpath(
                     GoudenGidsXPaths.ECONOMIC_DATA
                 ),
-                f"{GoudenGidsXPaths.ECONOMIC_DATA_SECTION_VALUE}",
+                GoudenGidsXPaths.ECONOMIC_DATA_SECTION_VALUE,
                 [
                     "34276539",
                     "18/6/2007",
@@ -216,6 +216,14 @@ class TestGoudenGidsSpider:
                     "Actief",
                 ],
                 id="economic-data-section-value",
+            ),
+            pytest.param(
+                LawyerResponse.BAKER_AND_MCKENZIE.value,
+                GoudenGidsXPaths.LOGO_SRC,
+                [
+                    "backer_and_mckenzie_files/5728405_baker_mckenzie_amsterdam_nv_logo.webp"
+                ],
+                id="logo-src",
             ),
         ],
     )

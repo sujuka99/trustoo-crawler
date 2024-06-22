@@ -25,3 +25,5 @@ class BusinessItem(Item):
     working_time = Field()
     parking_info = Field()
     economic_data = Field()
+    logo = Field()
+    pictures = Field()
