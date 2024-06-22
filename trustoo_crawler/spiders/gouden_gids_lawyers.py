@@ -132,9 +132,19 @@ class GoudenGidsLawyersSpider(Spider):
                 response, GoudenGidsXPaths.PAYMENT_OPTIONS
             ),
             certificates=self.get_element_text(response, GoudenGidsXPaths.CERTIFICATES),
-            other_information=self.get_other_information(response),
+            other_information=self.get_other_information(
+                response,
+                GoudenGidsXPaths.OTHER_INFORMATION_SECTION,
+                GoudenGidsXPaths.OTHER_INFORMATION_SECTION_TITLE,
+                GoudenGidsXPaths.OTHER_INFORMATION_SECTION_VALUE,
+            ),
             working_time=self.get_working_times(response),
-            parking_info=self.get_parking_info(response),
+            parking_info=self.get_other_information(
+                response,
+                GoudenGidsXPaths.PARKING_INFO,
+                GoudenGidsXPaths.PARKING_INFO_SECTION_NAME,
+                GoudenGidsXPaths.PARKING_INFO_SECTION_VALUE,
+            ),
             economic_data="",
         )
         yield business_item
@@ -164,23 +174,17 @@ class GoudenGidsLawyersSpider(Spider):
             sunday=self.get_working_time_day(response, WeekDays.SUNDAY),
         )
 
-    def get_other_information(self, response: HtmlResponse) -> dict[str, Any]:
-        sections = response.xpath(GoudenGidsXPaths.OTHER_INFORMATION_SECTION)
+    def get_other_information(
+        self,
+        response: HtmlResponse,
+        sections_xpath: str,
+        section_name_xpath: str,
+        section_value_xpath: str,
+    ) -> dict[str, Any]:
+        sections = response.xpath(sections_xpath)
         return {
-            section.xpath(GoudenGidsXPaths.OTHER_INFORMATION_SECTION_TITLE).get()
-            or "": [
-                el.strip()
-                for el in section.xpath(
-                    GoudenGidsXPaths.OTHER_INFORMATION_SECTION_VALUE
-                ).getall()
+            section.xpath(section_name_xpath).get() or "": [
+                el.strip() for el in section.xpath(section_value_xpath).getall()
             ]
-            for section in sections
-        }
-
-    def get_parking_info(self, response: HtmlResponse) -> dict[str, Any]:
-        sections = response.xpath(GoudenGidsXPaths.PARKING_INFO)
-        return {
-            section.xpath(GoudenGidsXPaths.PARKING_INFO_SECTION_NAME).get()
-            or "": section.xpath(GoudenGidsXPaths.PARKING_INFO_SECTION_VALUE).get()
             for section in sections
         }
