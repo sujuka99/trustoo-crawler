@@ -8,8 +8,9 @@ from scrapy.http import HtmlResponse
 
 from tests.utils import read_response_from_file
 from trustoo_crawler.spiders.gouden_gids_lawyers import (
-    GoudenGidsLawyersSpider,
+    GoudenGidsSpider,
     GoudenGidsXPaths,
+    WeekDays,
 )
 
 RESPONSES_PATH = "test_gouden_gids/responses"
@@ -30,13 +31,13 @@ class LawyerResponse(Enum):
     )
 
 
-class TestGoudenGidsLawyersSpider:
+class TestGoudenGidsSpider:
     @pytest.fixture()
-    def spider(self) -> GoudenGidsLawyersSpider:
-        return GoudenGidsLawyersSpider()
+    def spider(self) -> GoudenGidsSpider:
+        return GoudenGidsSpider()
 
     @pytest.fixture
-    def front_page_requests(self, spider: GoudenGidsLawyersSpider) -> Iterator[Request]:
+    def front_page_requests(self, spider: GoudenGidsSpider) -> Iterator[Request]:
         return spider.parse(
             read_response_from_file(
                 Path(f"{RESPONSES_PATH}/lawyers_search_p1.html"),
@@ -46,7 +47,7 @@ class TestGoudenGidsLawyersSpider:
 
     @pytest.fixture
     def search_page_requests(
-        self, spider: GoudenGidsLawyersSpider
+        self, spider: GoudenGidsSpider
     ) -> Iterator[Request]:
         return spider.parse_page(
             read_response_from_file(
@@ -67,7 +68,7 @@ class TestGoudenGidsLawyersSpider:
             == "https://www.goudengids.nl/nl/bedrijf/Amsterdam/L119701094/Rijnja+Meijer+%26+Balemans+Advocaten/"
         )
 
-    def test_parse_business_page(self, spider: GoudenGidsLawyersSpider):
+    def test_parse_business_page(self, spider: GoudenGidsSpider):
         items = spider.parse_business_page(
             read_response_from_file(
                 Path(f"{RESPONSES_PATH}/backer_and_mckenzie.html"),
@@ -128,9 +129,9 @@ class TestGoudenGidsLawyersSpider:
             ),
             pytest.param(
                 LawyerResponse.HENDRICKS.value,
-                f"normalize-space({GoudenGidsXPaths.WORKING_TIMES})",
+                f"normalize-space({GoudenGidsXPaths.WORKING_DAY.format(day=WeekDays.MONDAY)})",
                 [
-                    "Openingsuren Nu geopend - 9:00 - 17:30 Maandag 9:00 - 17:30 Dinsdag 9:00 - 17:30 Woensdag 9:00 - 17:30 Donderdag 9:00 - 17:30 Vrijdag 9:00 - 17:30"
+                    "Maandag 9:00 - 17:30"
                 ],
                 id="working-times",
             ),
@@ -198,7 +199,7 @@ class TestGoudenGidsLawyersSpider:
                 LawyerResponse.BAKER_AND_MCKENZIE.value.xpath(
                     GoudenGidsXPaths.ECONOMIC_DATA
                 ),
-                f"{GoudenGidsXPaths.ECONOMI_DATA_SECTION_NAME}",
+                f"{GoudenGidsXPaths.ECONOMIC_DATA_SECTION_NAME}",
                 [
                     "KVK-nummer:",
                     "Oprichtingsdatum:",
@@ -211,7 +212,7 @@ class TestGoudenGidsLawyersSpider:
                 LawyerResponse.BAKER_AND_MCKENZIE.value.xpath(
                     GoudenGidsXPaths.ECONOMIC_DATA
                 ),
-                f"{GoudenGidsXPaths.ECONOMI_DATA_SECTION_VALUE}",
+                f"{GoudenGidsXPaths.ECONOMIC_DATA_SECTION_VALUE}",
                 [
                     "34276539",
                     "18/6/2007",
@@ -225,7 +226,7 @@ class TestGoudenGidsLawyersSpider:
     def test_xpath(self, response: HtmlResponse, xpath: str, expected: str):
         assert [el.strip() for el in response.xpath(xpath).getall()] == expected
 
-    def test_get_other_information(self, spider: GoudenGidsLawyersSpider):
+    def test_get_other_information(self, spider: GoudenGidsSpider):
         parking_info = spider.get_other_information(
             read_response_from_file(
                 Path(f"{RESPONSES_PATH}/backer_and_mckenzie.html"),

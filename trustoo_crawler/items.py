@@ -19,7 +19,6 @@ class BusinessItem(Item):
     website = Field()
     email = Field()
     social_media = Field()
-    hourly_rate = Field()
     payment_options = Field()
     certificates = Field()
     other_information = Field()

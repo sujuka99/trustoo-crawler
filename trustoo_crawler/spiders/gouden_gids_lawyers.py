@@ -22,13 +22,6 @@ WEEKDAYS = (
 XPATH_CONTAINS = (
     "//{element}[contains(concat(' ', normalize-space({attr}), ' '), '{val}')]"
 )
-# Becker's method, credit: https://stackoverflow.com/a/971665/11610149
-XPATH_IF = (
-    "concat("
-    "   substring({true}, 1, number({condition}) * string-length({true}))"
-    "   substring({false}, 1, number(not({condition})) * string-length({false}))"
-    ")"
-)
 
 
 class WeekDays(StrEnum):
@@ -63,20 +56,9 @@ class GoudenGidsXPaths(StrEnum):
     )
     OTHER_INFORMATION_SECTION_TITLE = "normalize-space(span)"
     OTHER_INFORMATION_SECTION_VALUE = "//li/span/text()"
-    WORKING_TIMES = XPATH_CONTAINS.format(element="div", attr="h3", val="Openingsuren")
     WORKING_DAY = (
         f"{XPATH_CONTAINS.format(element="div", attr="h3", val="Openingsuren")}"
         f"{XPATH_CONTAINS.format(element="div", attr="div/text()", val="{day}")}"
-    )
-    WORKING_TIME_AM = (
-        f"{XPATH_CONTAINS.format(element="div", attr="h3", val="Openingsuren")}"
-        f"{XPATH_CONTAINS.format(element="div", attr="div/text()", val="{day}")}"
-        f"{XPATH_CONTAINS.format(element="div", attr="@class", val="oh-table__am whitespace-nowrap mr-1 md:mr-3")}"
-    )
-    WORKING_TIME_PM = (
-        f"{XPATH_CONTAINS.format(element="div", attr="h3", val="Openingsuren")}"
-        f"{XPATH_CONTAINS.format(element="div", attr="div/text()", val="{day}")}"
-        f"{XPATH_CONTAINS.format(element="div", attr="@class", val="oh-table__pm whitespace-nowrap")}"
     )
     MAX_PAGE = "/html/body/main/div/div/div[2]/div[1]/div[2]/div[2]/ul/li[8]/a/text()"  # TODO(Ivan Yordanov): Move away from absolute address
     LISTING = f"{XPATH_CONTAINS.format(element="li", attr="@itemtype", val="http://schema.org/LocalBusiness")}/@data-href"
@@ -88,11 +70,11 @@ class GoudenGidsXPaths(StrEnum):
     ECONOMIC_DATA = (
         f"{XPATH_CONTAINS.format(element="div", attr="@id", val="economic-data")}//li"
     )
-    ECONOMI_DATA_SECTION_NAME = "normalize-space(span)"
-    ECONOMI_DATA_SECTION_VALUE = "text()"
+    ECONOMIC_DATA_SECTION_NAME = "normalize-space(span)"
+    ECONOMIC_DATA_SECTION_VALUE = "text()"
 
 
-class GoudenGidsLawyersSpider(Spider):
+class GoudenGidsSpider(Spider):
     name = "gouden_gids"
     start_urls = [START_URL]
 
@@ -156,8 +138,8 @@ class GoudenGidsLawyersSpider(Spider):
             economic_data=self.get_other_information(
                 response,
                 GoudenGidsXPaths.ECONOMIC_DATA,
-                GoudenGidsXPaths.ECONOMI_DATA_SECTION_NAME,
-                GoudenGidsXPaths.ECONOMI_DATA_SECTION_VALUE,
+                GoudenGidsXPaths.ECONOMIC_DATA_SECTION_NAME,
+                GoudenGidsXPaths.ECONOMIC_DATA_SECTION_VALUE,
             ),
         )
         yield business_item
