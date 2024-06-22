@@ -11,7 +11,7 @@ from trustoo_crawler.spiders.gouden_gids import (
     GoudenGidsSpider,
     GoudenGidsXPaths,
 )
-from trustoo_crawler.utils import WeekDays
+from trustoo_crawler.utils import DutchWeekDay
 
 RESPONSES_PATH = "test_gouden_gids/responses"
 
@@ -127,7 +127,7 @@ class TestGoudenGidsSpider:
             ),
             pytest.param(
                 LawyerResponse.HENDRICKS.value,
-                f"normalize-space({GoudenGidsXPaths.WORKING_DAY.format(day=WeekDays.MONDAY)})",
+                f"normalize-space({GoudenGidsXPaths.WORKING_DAY.format(day=DutchWeekDay.MONDAY)})",
                 ["Maandag 9:00 - 17:30"],
                 id="working-times",
             ),

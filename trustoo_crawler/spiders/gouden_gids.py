@@ -6,14 +6,16 @@ from scrapy import Request, Spider
 from scrapy.http import HtmlResponse
 
 from trustoo_crawler.items import BusinessItem, WorkingTimeItem
-from trustoo_crawler.utils import WeekDays
+from trustoo_crawler.utils import DutchWeekDay
 
 BASE_URL = "https://www.goudengids.nl"
-START_URL = "https://www.goudengids.nl/nl/bedrijven/advocaten/"
-PAGE_URL = "https://www.goudengids.nl/nl/zoeken/advocaten/"
+START_URL = "https://www.goudengids.nl/nl/bedrijven/{category}/"
+PAGE_URL = "https://www.goudengids.nl/nl/zoeken/{category}/"
 XPATH_CONTAINS = (  # Find element that has a certain attribute of specific value
     "//{element}[contains(concat(' ', normalize-space({attr}), ' '), '{val}')]"
 )
+DEFAULT_CATEGORY = "advocaten"
+DEFAULT_MAX_PAGE = "1"
 
 
 class GoudenGidsXPaths(StrEnum):
@@ -70,15 +72,26 @@ class GoudenGidsSpider(Spider):
     name = "gouden_gids"
     start_urls = [START_URL]
 
+    def __init__(
+        self,
+        name: str | None = None,
+        category: str = DEFAULT_CATEGORY,
+        max_page: str | None = None,
+        **kwargs,
+    ):
+        self.category = category
+        self.max_page = max_page
+        super().__init__(name, **kwargs)
+
+    def start_requests(self) -> Iterator[Request]:
+        yield Request(START_URL.format(category=self.category), self.parse)
+
     def parse(self, response: HtmlResponse, **kwargs) -> Iterator[Request]:
         """Find the number of pages for a specific category, call `parse_page` on each."""
         max_page_xpath = GoudenGidsXPaths.MAX_PAGE
-        max_page = int(response.xpath(max_page_xpath)[0].get())
-        self.log(max_page)
-        # for page_number in range(1, max_page + 1):  # TODO(Ivan Yordanov): Uncomment, parametrize
-        for page_number in range(1, 2):
-            page_url = f"{PAGE_URL}{page_number}/"
-            self.log(page_url)
+        max_page = int(self.max_page or response.xpath(max_page_xpath)[0].get())
+        for page_number in range(1, max_page + 1):
+            page_url = f"{PAGE_URL.format(category=self.category)}{page_number}/"
             yield Request(
                 page_url,
                 callback=self.parse_page,
@@ -119,8 +132,7 @@ class GoudenGidsSpider(Spider):
             ),
             working_time=self.get_working_times(response),
             # TODO(Ivan Yordanov): Broken because the content is loaded dynamically
-            # Try to get the data from seety.co/nl by using the available details
-            # about location.
+            # Solvable using Splash + ScrapyJS or Selenium
             parking_info=self.get_other_information(
                 response,
                 GoudenGidsXPaths.PARKING_INFO,
@@ -144,23 +156,23 @@ class GoudenGidsSpider(Spider):
     def get_element_texts(self, response: HtmlResponse, xpath: str) -> list[str]:
         return [el.strip() for el in response.xpath(xpath).getall()] or []
 
-    def get_working_time_day(self, response: HtmlResponse, day: WeekDays) -> str:
-        return (
-            response.xpath(
-                f"normalize-space({GoudenGidsXPaths.WORKING_DAY.format(day=day)})"
-            ).get()
-            or ""
-        )
-
     def get_working_times(self, response: HtmlResponse) -> WorkingTimeItem:
+        """Return `WorkingTimeItem` containing the work time of a business."""
+
+        def get_working_time_day(response: HtmlResponse, day: DutchWeekDay) -> str:
+            """Return the working time for a single day."""
+            return self.get_element_text(
+                response, GoudenGidsXPaths.WORKING_DAY.format(day=day)
+            )
+
         return WorkingTimeItem(
-            monday=self.get_working_time_day(response, WeekDays.MONDAY),
-            tuesday=self.get_working_time_day(response, WeekDays.TUESDAY),
-            wednesday=self.get_working_time_day(response, WeekDays.WEDNESDAY),
-            thursday=self.get_working_time_day(response, WeekDays.THURSDAY),
-            friday=self.get_working_time_day(response, WeekDays.FRIDAY),
-            saturday=self.get_working_time_day(response, WeekDays.SATURDAY),
-            sunday=self.get_working_time_day(response, WeekDays.SUNDAY),
+            monday=get_working_time_day(response, DutchWeekDay.MONDAY),
+            tuesday=get_working_time_day(response, DutchWeekDay.TUESDAY),
+            wednesday=get_working_time_day(response, DutchWeekDay.WEDNESDAY),
+            thursday=get_working_time_day(response, DutchWeekDay.THURSDAY),
+            friday=get_working_time_day(response, DutchWeekDay.FRIDAY),
+            saturday=get_working_time_day(response, DutchWeekDay.SATURDAY),
+            sunday=get_working_time_day(response, DutchWeekDay.SUNDAY),
         )
 
     def get_other_information(
