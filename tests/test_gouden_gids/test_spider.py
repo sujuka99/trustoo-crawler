@@ -7,11 +7,11 @@ from scrapy import Request
 from scrapy.http import HtmlResponse
 
 from tests.utils import read_response_from_file
-from trustoo_crawler.spiders.gouden_gids_lawyers import (
+from trustoo_crawler.spiders.gouden_gids import (
     GoudenGidsSpider,
     GoudenGidsXPaths,
-    WeekDays,
 )
+from trustoo_crawler.utils import WeekDays
 
 RESPONSES_PATH = "test_gouden_gids/responses"
 
@@ -46,9 +46,7 @@ class TestGoudenGidsSpider:
         )
 
     @pytest.fixture
-    def search_page_requests(
-        self, spider: GoudenGidsSpider
-    ) -> Iterator[Request]:
+    def search_page_requests(self, spider: GoudenGidsSpider) -> Iterator[Request]:
         return spider.parse_page(
             read_response_from_file(
                 Path(f"{RESPONSES_PATH}/lawyers_search_p1.html"),
@@ -130,9 +128,7 @@ class TestGoudenGidsSpider:
             pytest.param(
                 LawyerResponse.HENDRICKS.value,
                 f"normalize-space({GoudenGidsXPaths.WORKING_DAY.format(day=WeekDays.MONDAY)})",
-                [
-                    "Maandag 9:00 - 17:30"
-                ],
+                ["Maandag 9:00 - 17:30"],
                 id="working-times",
             ),
             pytest.param(

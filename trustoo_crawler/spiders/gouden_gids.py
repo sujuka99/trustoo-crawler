@@ -6,35 +6,19 @@ from scrapy import Request, Spider
 from scrapy.http import HtmlResponse
 
 from trustoo_crawler.items import BusinessItem, WorkingTimeItem
+from trustoo_crawler.utils import WeekDays
 
 BASE_URL = "https://www.goudengids.nl"
 START_URL = "https://www.goudengids.nl/nl/bedrijven/advocaten/"
 PAGE_URL = "https://www.goudengids.nl/nl/zoeken/advocaten/"
-WEEKDAYS = (
-    "Maandag",
-    "Dinsdag",
-    "Woensdag",
-    "Donderdag",
-    "Vrijdag",
-    "Zaterdag",
-    "Zondag",
-)
 XPATH_CONTAINS = (
     "//{element}[contains(concat(' ', normalize-space({attr}), ' '), '{val}')]"
 )
 
 
-class WeekDays(StrEnum):
-    MONDAY = "Maandag"
-    TUESDAY = "Dinsdag"
-    WEDNESDAY = "Woensdag"
-    THURSDAY = "Donderdag"
-    FRIDAY = "Vrijdag"
-    SATURDAY = "Zaterdag"
-    SUNDAY = "Zondag"
-
-
 class GoudenGidsXPaths(StrEnum):
+    """Stores useful xpaths."""
+
     NAME = XPATH_CONTAINS.format(element="h1", attr="@itemprop", val="name")
     LOCATION = XPATH_CONTAINS.format(element="span", attr="@itemprop", val="address")
     DESCRIPTION = f"{XPATH_CONTAINS.format(element="div", attr="h3/text()", val="Beschrijving")}/div"
