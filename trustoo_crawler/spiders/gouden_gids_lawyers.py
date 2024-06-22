@@ -80,6 +80,11 @@ class GoudenGidsXPaths(StrEnum):
     )
     MAX_PAGE = "/html/body/main/div/div/div[2]/div[1]/div[2]/div[2]/ul/li[8]/a/text()"  # TODO(Ivan Yordanov): Move away from absolute address
     LISTING = f"{XPATH_CONTAINS.format(element="li", attr="@itemtype", val="http://schema.org/LocalBusiness")}/@data-href"
+    PARKING_INFO = (
+        f"{XPATH_CONTAINS.format(element="div", attr="@id", val="parking-info")}//li"
+    )
+    PARKING_INFO_SECTION_NAME = "normalize-space(span)"
+    PARKING_INFO_SECTION_VALUE = "text()"
 
 
 class GoudenGidsLawyersSpider(Spider):
@@ -123,13 +128,14 @@ class GoudenGidsLawyersSpider(Spider):
             social_media=self.get_element_texts(
                 response, GoudenGidsXPaths.SOCIAL_MEDIA
             ),
-            # hourly_rate=self.get_element_text(response, GoudenGidsXPaths.HOURLY_RATE),
             payment_options=self.get_element_texts(
                 response, GoudenGidsXPaths.PAYMENT_OPTIONS
             ),
             certificates=self.get_element_text(response, GoudenGidsXPaths.CERTIFICATES),
             other_information=self.get_other_information(response),
             working_time=self.get_working_times(response),
+            parking_info=self.get_parking_info(response),
+            economic_data="",
         )
         yield business_item
 
@@ -168,5 +174,13 @@ class GoudenGidsLawyersSpider(Spider):
                     GoudenGidsXPaths.OTHER_INFORMATION_SECTION_VALUE
                 ).getall()
             ]
+            for section in sections
+        }
+
+    def get_parking_info(self, response: HtmlResponse) -> dict[str, Any]:
+        sections = response.xpath(GoudenGidsXPaths.PARKING_INFO)
+        return {
+            section.xpath(GoudenGidsXPaths.PARKING_INFO_SECTION_NAME).get()
+            or "": section.xpath(GoudenGidsXPaths.PARKING_INFO_SECTION_VALUE).get()
             for section in sections
         }

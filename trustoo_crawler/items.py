@@ -24,3 +24,5 @@ class BusinessItem(Item):
     certificates = Field()
     other_information = Field()
     working_time = Field()
+    parking_info = Field()
+    economic_data = Field()
