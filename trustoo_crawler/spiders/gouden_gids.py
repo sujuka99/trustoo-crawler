@@ -59,6 +59,11 @@ class GoudenGidsXPaths(StrEnum):
     LOGO_SRC = (
         f"{XPATH_CONTAINS.format(element="img", attr="@data-yext", val="logo")}/@src"
     )
+    PHOTO_SRC = (
+        f"{XPATH_CONTAINS.format(element="div", attr="@class", val="gallery flex flex-wrap")}"
+        f"{XPATH_CONTAINS.format(element="img", attr="@class", val="gallery__item")}"
+        "/@src"
+    )
 
 
 class GoudenGidsSpider(Spider):
@@ -129,6 +134,7 @@ class GoudenGidsSpider(Spider):
                 GoudenGidsXPaths.ECONOMIC_DATA_SECTION_VALUE,
             ),
             logo=self.get_element_text(response, GoudenGidsXPaths.LOGO_SRC),
+            pictures=self.get_element_texts(response, GoudenGidsXPaths.PHOTO_SRC),
         )
         yield business_item
 

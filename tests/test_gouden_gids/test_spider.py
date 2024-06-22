@@ -225,6 +225,14 @@ class TestGoudenGidsSpider:
                 ],
                 id="logo-src",
             ),
+            pytest.param(
+                LawyerResponse.BAKER_AND_MCKENZIE.value,
+                GoudenGidsXPaths.PHOTO_SRC,
+                [
+                    "backer_and_mckenzie_files/41320424_baker_mckenzie_amsterdam_nv_traffic_image.webp"
+                ],
+                id="photo-src",
+            ),
         ],
     )
     def test_xpath(self, response: HtmlResponse, xpath: str, expected: str):
