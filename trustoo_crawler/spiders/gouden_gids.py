@@ -4,6 +4,7 @@ from typing import Any
 
 from scrapy import Request, Spider
 from scrapy.http import HtmlResponse
+from scrapy_splash import SplashRequest
 
 from trustoo_crawler.items import BusinessItem, WorkingTimeItem
 from trustoo_crawler.utils import DutchWeekDay
@@ -104,7 +105,9 @@ class GoudenGidsSpider(Spider):
         listings_urls: list[str] = response.xpath(listings_path).getall()
         # for url in listings_urls:  # TODO(Ivan Yordanov): Uncomment
         for url in listings_urls:
-            yield Request(BASE_URL + url, callback=self.parse_business_page)
+            # TODO(Ivan Yordanov): Using `SplashRequest` to read elements such as parking infor properly,
+            # but it is not working at the moment.
+            yield SplashRequest(BASE_URL + url, callback=self.parse_business_page, args={"wait": 10})
 
     def parse_business_page(self, response: HtmlResponse) -> Iterator[BusinessItem]:
         """Yield item containing all scraped details bout a business."""
@@ -132,7 +135,7 @@ class GoudenGidsSpider(Spider):
             ),
             working_time=self.get_working_times(response),
             # TODO(Ivan Yordanov): Broken because the content is loaded dynamically
-            # Solvable using Splash + ScrapyJS or Selenium
+            # Solvable using Splash or Selenium
             parking_info=self.get_other_information(
                 response,
                 GoudenGidsXPaths.PARKING_INFO,
