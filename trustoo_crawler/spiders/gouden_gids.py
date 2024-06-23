@@ -107,7 +107,9 @@ class GoudenGidsSpider(Spider):
         for url in listings_urls:
             # TODO(Ivan Yordanov): Using `SplashRequest` to read elements such as parking infor properly,
             # but it is not working at the moment.
-            yield SplashRequest(BASE_URL + url, callback=self.parse_business_page, args={"wait": 10})
+            yield SplashRequest(
+                BASE_URL + url, callback=self.parse_business_page, args={"wait": 10}
+            )
 
     def parse_business_page(self, response: HtmlResponse) -> Iterator[BusinessItem]:
         """Yield item containing all scraped details bout a business."""
