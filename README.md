@@ -6,15 +6,52 @@ My entry to Trustoo's hiring challenge. Find its description [here](case_junior_
 
 ### QuickStart
 
+##### Prerequisites
+
+- Docker Compose
+- Python 3.12
+
+##### Steps
+
+1. Clone this repository or download its contents.
+2. Install the python environment `poetry install`.
+3. Start Splash: `docker compose up -d`.
+4. Run the scraper `poetry run scrapy crawl gouden_gids`.
+5. Wait for the process to finish and find the scraped data in `results.csv`.
+
 ### Features
 
 ##### Present
 
+- Crawl any category in [goudengids.nl](https://www.goudengids.nl/). Provide it as an argument to the spider: `poetry run scrapy crawl gouden_gids -a category=fysiotherapeuten`
+- The `gouden_gids` spider also takes the number of pages to crawl as an argument. example: `poetry run scrapy crawl gouden_gids -a category=fysiotherapeuten -a max_page=3`
+- The spider waits between requests while crawling in order to avoid detection and overloading the infrastructure of the crawled website.
+- The spider uses a spoofed user-agent which is constantly changed and randomly chosen
+
 ##### Planned
 
-### Roadmap
+- Scrape parking info
+- Scrape reviews
+- More extensive detection avoidance
+- Improve argument names
+- Add a CLI
+- Publish to PyPI
+- Publish a docker image with Splash auto starting to allow for an easier showcase.
 
-### Developer Guide
+### Discussion
+
+###### Positive remarks
+
+- Scraper works well with lawyers, but also does well with the rest of the categories in Gouden Gids.
+- The code is well documented, formatted and linted.
+- A decent part of the code is covered by tests.
+
+###### To be improved
+
+- Unit testing
+- Integration testing
+- Scraping dynamic content
+- Logging
 
 ## Case 2
 

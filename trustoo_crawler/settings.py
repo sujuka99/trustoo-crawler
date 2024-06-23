@@ -14,7 +14,7 @@ NEWSPIDER_MODULE = "trustoo_crawler.spiders"
 
 SPLASH_URL = "http://localhost:8050"
 
-FEEDS = {"test.csv": {"format": "csv", "overwrite": True}}
+FEEDS = {"results.csv": {"format": "csv", "overwrite": True}}
 
 # set the Splash deduplication class
 DUPEFILTER_CLASS = "scrapy_splash.SplashAwareDupeFilter"
