@@ -9,27 +9,38 @@ from scrapy_splash import SplashRequest
 from trustoo_crawler.items import BusinessItem, WorkingTimeItem
 from trustoo_crawler.utils import DutchWeekDay
 
-BASE_URL = "https://www.goudengids.nl"
-START_URL = "https://www.goudengids.nl/nl/bedrijven/{category}/"
-PAGE_URL = "https://www.goudengids.nl/nl/zoeken/{category}/"
+# Store some usefule URLs in constants
+BASE_URL = "https://www.goudengids.nl"  # The base of the later generated urls
+# The URLs below are parametrized to allow the spider to crawl any category in Gouden gids
+# Fortunately all categories share the same structure
+START_URL = "https://www.goudengids.nl/nl/bedrijven/{category}/"  # The "starting" page for each category
+PAGE_URL = "https://www.goudengids.nl/nl/zoeken/{category}/"  # The url shared by all pages of results for categories
+# I have (over)used the construction below, so it made sense to parametrize it and
+# store it in a constant
+# As of writing this comment, I have no more time left to change things up and
+# I just found out that this XPath does exactly do what I thought it did.
+# This StackOverflow answer explains what happened:
+# https://stackoverflow.com/a/46516155/11610149
 XPATH_CONTAINS = (  # Find element that has a certain attribute of specific value
     "{element}[contains(concat(' ', normalize-space({attr}), ' '), '{val}')]"
 )
+# The task called for lawyers, so they are the default category
 DEFAULT_CATEGORY = "advocaten"
-DEFAULT_MAX_PAGE = "1"
 
 
 class GoudenGidsXPaths(StrEnum):
     """Stores useful XPaths."""
 
-    NAME = f"//{XPATH_CONTAINS.format(element="h1", attr="@itemprop", val="name")}"
-    LOCATION = (
+    # I have not described all elements below as some are trivial to deduce from their names
+    NAME = f"//{XPATH_CONTAINS.format(element="h1", attr="@itemprop", val="name")}"  # The name of the business
+    LOCATION = (  # The address of the business
         f"//{XPATH_CONTAINS.format(element="span", attr="@itemprop", val="address")}"
     )
     DESCRIPTION = f"//{XPATH_CONTAINS.format(element="div", attr="h3/text()", val="Beschrijving")}/div"
     PHONE = f"//{XPATH_CONTAINS.format(element="a", attr="@data-ta", val="PhoneButtonClick")}"
     WEBSITE = f"//{XPATH_CONTAINS.format(element="div", attr="@data-ta", val="WebsiteActionClick")}/@data-js-value"
     EMAIL = f"//{XPATH_CONTAINS.format(element="div", attr="@data-ta", val="EmailActionClick")}/@data-js-value"
+    # All links towards social media
     SOCIAL_MEDIA = f"//{XPATH_CONTAINS.format(element="div", attr="@class", val="flex flex-wrap social-media-wrap")}/a/@href"
     PAYMENT_OPTIONS = (
         f"//{XPATH_CONTAINS.format(element="div", attr="h3", val="Betaalmogelijkheden")}"
@@ -39,31 +50,55 @@ class GoudenGidsXPaths(StrEnum):
         f"//{XPATH_CONTAINS.format(element="div", attr="h3", val="Certificeringen")}"
         "//li/span/text()"
     )
+    # Overige informatie
     OTHER_INFORMATION_SECTION = (
         f"//{XPATH_CONTAINS.format(element="div", attr="h3", val="Overige informatie")}"
         f"//{XPATH_CONTAINS.format(element="div", attr="span/@class", val="tab__subtitle")}"
     )
+    # The name of a subsection in Overige informatie, to be used on the data that
+    # `OTHER_INFORMATION_SECTION` has produced
     OTHER_INFORMATION_SECTION_TITLE = "normalize-space(span)"
+    # The contents of a subsection in Overige informatie, to be used on the data that
+    # `OTHER_INFORMATION_SECTION` has produced
     OTHER_INFORMATION_SECTION_VALUE = "//li/span/text()"
+    # Parametrized, points towards a specific day in the Openingsuren section
     WORKING_DAY = (
         f"//{XPATH_CONTAINS.format(element="div", attr="h3", val="Openingsuren")}"
         f"//{XPATH_CONTAINS.format(element="div", attr="div/text()", val="{day}")}"
     )
-    MAX_PAGE = "/html/body/main/div/div/div[2]/div[1]/div[2]/div[2]/ul/li[8]/a/text()"  # TODO(Ivan Yordanov): Move away from absolute address
+    # Find the number of pages of results
+    # TODO(Ivan Yordanov): Move away from absolute address
+    MAX_PAGE = "/html/body/main/div/div/div[2]/div[1]/div[2]/div[2]/ul/li[8]/a/text()"
     LISTING = f"//{XPATH_CONTAINS.format(element="li", attr="@itemtype", val="http://schema.org/LocalBusiness")}/@data-href"
+    # The folowing 3 XPaths work great on the HTML responses I downloaded for unit testing,
+    # but since the parking info is generated dynamically using JS and seety.nl, scrapy
+    # fails to return the actual values and instead returns meaningless parameter names.
+    # Goes to show that unit testing must be accompanied by integration testing...
+    # The element that contains the specifics about parking spaces
     PARKING_INFO = (
         f"//{XPATH_CONTAINS.format(element="div", attr="@id", val="parking-info")}//li"
     )
+    # The name of a parking-related piece of information, to be used on the data that
+    # `PARKING_INFO` has produced
     PARKING_INFO_SECTION_NAME = "normalize-space(span)"
+    # The value of a parking-related piece of information, to be used on the data that
+    # `PARKING_INFO` has produced
     PARKING_INFO_SECTION_VALUE = "text()"
+    # The element that contains the specifics about financial data
     ECONOMIC_DATA = (
         f"//{XPATH_CONTAINS.format(element="div", attr="@id", val="economic-data")}//li"
     )
+    # The name of a finance-related piece of information, to be used on the data that
+    # `ECONOMIC_DATA` has produced
     ECONOMIC_DATA_SECTION_NAME = "normalize-space(span)"
+    # The value of a finance-related piece of information, to be used on the data that
+    # `ECONOMIC_DATA` has produced
     ECONOMIC_DATA_SECTION_VALUE = "text()"
+    # Gets the link of the image used as logo for the business
     LOGO_SRC = (
         f"//{XPATH_CONTAINS.format(element="img", attr="@data-yext", val="logo")}/@src"
     )
+    # Gets the link of the images stored in the gallery of the business
     PHOTO_SRC = (
         f"//{XPATH_CONTAINS.format(element="div", attr="@class", val="gallery flex flex-wrap")}"
         f"//{XPATH_CONTAINS.format(element="img", attr="@class", val="gallery__item")}"
