@@ -113,9 +113,18 @@ class GoudenGidsSpider(Spider):
     :param max_page: Number of pages to scrape starting from page 1.
     """
 
-    name = "gouden_gids"
-    start_urls = [START_URL]
+    name = "gouden_gids"  # Name of the spider, seemed fitting to name it after the website
 
+    # Overriding the object initialization to add parameters.
+    # This way the user can provide as arguments the desired category
+    # and the number of pages to scrape. I could allow selection of multiple categories at once,
+    # but then the number of pages to scrape must be defined per category, so I
+    # ultimately decided it was not worth the hassle for now.
+    # I would make the crawler configurable via a YAML or maybe env vars to
+    # enable more complicated scrapes with just 1 command.
+    # For now if one wants to scrape more than 1 category with 1 command,
+    # the easiest way is probably to write a simple parametrized bash function that
+    # runs a couple instances of this spider.
     def __init__(
         self,
         name: str | None = None,
@@ -129,36 +138,57 @@ class GoudenGidsSpider(Spider):
 
     def start_requests(self) -> Iterator[Request]:
         """Generate starting point(s) for the spider."""
+        # Here is where the selected category is injected into the url that
+        # determines the number of pages. The URL is then passed on to `self.parse`
         yield Request(START_URL.format(category=self.category), self.parse)
 
     def parse(self, response: HtmlResponse, **kwargs) -> Iterator[Request]:
         """Find the number of pages for a specific category, call `parse_page` on each."""
-        max_page_xpath = GoudenGidsXPaths.MAX_PAGE
-        max_page = int(self.max_page or response.xpath(max_page_xpath)[0].get())
+        # The max page to reach while crawling is either the one passed by the user (`self.max_page`)
+        # or if the user didn't pass it, it is scraped from the category "home page"
+        # That is also the only use of the category home page.
+        # We have to scrape it though, because otherwise we couldn't detect whether
+        # the user has passed a larger number of pages than exist.
+        max_page = int(response.xpath(GoudenGidsXPaths.MAX_PAGE)[0].get())
+        if self.max_page:
+            # We could log here and notify the user if he provides too big of a number.
+            max_page = min(int(self.max_page), max_page)
         for page_number in range(1, max_page + 1):
+            # The search results share the same url, just with a different page number
+            # at the end, hence we can generate all of those and call `parse_page` on
+            # each.
             page_url = f"{PAGE_URL.format(category=self.category)}{page_number}/"
             yield Request(
                 page_url,
                 callback=self.parse_page,
-                meta={"handle_httpstatus_list": [302]},
             )
 
+    # This is the function that generates the responses that we really care about
     def parse_page(self, response: HtmlResponse) -> Iterator[Request]:
-        """Find all businesses in a "search" page, call `parse_business_page` on each."""
-        listings_path = GoudenGidsXPaths.LISTING
-        listings_urls: list[str] = response.xpath(listings_path).getall()
-        # for url in listings_urls:  # TODO(Ivan Yordanov): Uncomment
-        for url in listings_urls:
+        """Find all businesses in a "search results" page, call `parse_business_page` on each."""
+        for url in response.xpath(GoudenGidsXPaths.LISTING).getall():
             # TODO(Ivan Yordanov): Using `SplashRequest` to read elements such as parking infor properly,
-            # but it is not working at the moment.
+            # but it is not working at the moment. I suspect that it has something to
+            # do with the args, and perhaps some settings in `settings.py`, but I am
+            # not sure.
+            # The goal is to wait for a little, so that the page has time to
+            # load fully and then pass the now final HtmlResponse to the functions
+            # that scrape the data off of it.
             yield SplashRequest(
-                BASE_URL + url, callback=self.parse_business_page, args={"wait": 10}
+                BASE_URL + url, callback=self.parse_business_page, args={"wait": 3}
             )
 
     def parse_business_page(self, response: HtmlResponse) -> Iterator[BusinessItem]:
         """Yield item containing all scraped details bout a business."""
-        self.log(response.url)
-        self.log(response.status)
+        # This is the object that contains all the scraped data for a business.
+        # For each of its attributes I use one of the functions that I have defined
+        # further down together with an XPath from that enum class at the top of the file.
+        # The enum's strengths shine here -- notice how instead of long ugly strings
+        # we have meaningful names such as name, location, etc.
+        # We also hopefully wouldn't need to touch this function at all suppose the path
+        # to a section changes and XPaths need to be modified. That can happen in
+        # `GoudenGidsXPaths` where each string is assigned to a clear name, immediately
+        # making it clear what its general meaning is.
         business_item = BusinessItem(
             name=self.get_element_text(response, GoudenGidsXPaths.NAME),
             location=self.get_element_text(response, GoudenGidsXPaths.LOCATION),
@@ -181,7 +211,10 @@ class GoudenGidsSpider(Spider):
             ),
             working_time=self.get_working_times(response),
             # TODO(Ivan Yordanov): Broken because the content is loaded dynamically
-            # Solvable using Splash or Selenium
+            # Solvable using Splash or Selenium.
+            # For now I have chosen Splash, because the library is slightly better maintained.
+            # `scrapy-selenium` has been dead for ~3 years while `scrapy-splash`
+            # was last updated in February 2023.
             parking_info=self.get_other_information(
                 response,
                 GoudenGidsXPaths.PARKING_INFO,
@@ -197,25 +230,51 @@ class GoudenGidsSpider(Spider):
             logo=self.get_element_text(response, GoudenGidsXPaths.LOGO_SRC),
             pictures=self.get_element_texts(response, GoudenGidsXPaths.PHOTO_SRC),
         )
+        # Since `business_item` is a scrapy.Item instance, scrapy knows to collect
+        # it and write it to the `.csv` file that we have defined in the settings.
         yield business_item
 
-    def get_element_text(self, response: HtmlResponse, xpath: str) -> str:
+    # Method is static, because it doesn't need to access anything from `self`
+    # The code is gonna be a bit easier to read and no needless operations would
+    # be performed. Same for the static methods below.
+    @staticmethod
+    def get_element_text(response: HtmlResponse, xpath: str) -> str:
         """Return the text contained in the element towards which a provided xpath points."""
+        # use `or` to ensure that the return type is `str`
         return response.xpath(f"normalize-space({xpath})").get() or ""
 
-    def get_element_texts(self, response: HtmlResponse, xpath: str) -> list[str]:
+    @staticmethod
+    def get_element_texts(response: HtmlResponse, xpath: str) -> list[str]:
         """Return the texts contained in the element towards which a provided xpath points."""
+        # In some places there are a couple elements that we can just retrieve in a list
+        # For those, it is hard to use `normalize-space()` in the XPath, especially because
+        # scrapy uses XPath 1.0. Hence, we use Python's string manipulation abilities
+        # to remove all redundant whitespace from the texts
         return [el.strip() for el in response.xpath(xpath).getall()] or []
 
-    def get_working_times(self, response: HtmlResponse) -> WorkingTimeItem:
+    # This method would have been static if it didn't have to call `get_element_text`.
+    # Neatly, we can make it a class method. It doesn't need anything from
+    # an instance, it only needs a static method, so instead of binding `get_working_times`
+    # to each instance of its class, we bind it just once to the class itself.
+    @classmethod
+    def get_working_times(cls, response: HtmlResponse) -> WorkingTimeItem:
         """Return `WorkingTimeItem` containing the work time of a business."""
 
+        # Here I have nested the function, because I see no place where
+        # it could be used aside from here in `get_working_times`. This keeps the namespace
+        # clean.
         def get_working_time_day(response: HtmlResponse, day: DutchWeekDay) -> str:
             """Return the working time for a single day."""
-            return self.get_element_text(
+            return cls.get_element_text(
                 response, GoudenGidsXPaths.WORKING_DAY.format(day=day)
             )
-
+        # Note how this function returns a `scrapy.Item`, instead of
+        # yielding it. This is important as the `WorkingTimeItem` is intended
+        # to be just a part of the BusinessItem.
+        #
+        # The code repetition is rather annoying here. There is a way to
+        # avoid it, but since I am not 100% sure how it would be best to do it,
+        # I prefer to leave as is for the moment until I have a little time to tinker with it.
         return WorkingTimeItem(
             monday=get_working_time_day(response, DutchWeekDay.MONDAY),
             tuesday=get_working_time_day(response, DutchWeekDay.TUESDAY),
@@ -226,8 +285,8 @@ class GoudenGidsSpider(Spider):
             sunday=get_working_time_day(response, DutchWeekDay.SUNDAY),
         )
 
+    @staticmethod
     def get_other_information(
-        self,
         response: HtmlResponse,
         sections_xpath: str,
         section_name_xpath: str,
@@ -248,10 +307,11 @@ class GoudenGidsSpider(Spider):
             the piece of information.
         :return: Dictionary containing the corresponding data.
         """
-        sections = response.xpath(sections_xpath)
+        # This is almost a combination of the 2 simpler static methods above
+        # I would try to remove the repeated logic here.
         return {
             section.xpath(section_name_xpath).get() or "": [
                 el.strip() for el in section.xpath(section_value_xpath).getall()
             ]
-            for section in sections
+            for section in response.xpath(sections_xpath)
         }
