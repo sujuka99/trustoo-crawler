@@ -13,63 +13,69 @@ BASE_URL = "https://www.goudengids.nl"
 START_URL = "https://www.goudengids.nl/nl/bedrijven/{category}/"
 PAGE_URL = "https://www.goudengids.nl/nl/zoeken/{category}/"
 XPATH_CONTAINS = (  # Find element that has a certain attribute of specific value
-    "//{element}[contains(concat(' ', normalize-space({attr}), ' '), '{val}')]"
+    "{element}[contains(concat(' ', normalize-space({attr}), ' '), '{val}')]"
 )
 DEFAULT_CATEGORY = "advocaten"
 DEFAULT_MAX_PAGE = "1"
 
 
 class GoudenGidsXPaths(StrEnum):
-    """Stores useful xpaths."""
+    """Stores useful XPaths."""
 
-    NAME = XPATH_CONTAINS.format(element="h1", attr="@itemprop", val="name")
-    LOCATION = XPATH_CONTAINS.format(element="span", attr="@itemprop", val="address")
-    DESCRIPTION = f"{XPATH_CONTAINS.format(element="div", attr="h3/text()", val="Beschrijving")}/div"
-    PHONE = XPATH_CONTAINS.format(element="a", attr="@data-ta", val="PhoneButtonClick")
-    WEBSITE = f"{XPATH_CONTAINS.format(element="div", attr="@data-ta", val="WebsiteActionClick")}/@data-js-value"
-    EMAIL = f"{XPATH_CONTAINS.format(element="div", attr="@data-ta", val="EmailActionClick")}/@data-js-value"
-    SOCIAL_MEDIA = f"{XPATH_CONTAINS.format(element="div", attr="@class", val="flex flex-wrap social-media-wrap")}/a/@href"
+    NAME = f"//{XPATH_CONTAINS.format(element="h1", attr="@itemprop", val="name")}"
+    LOCATION = f"//{XPATH_CONTAINS.format(element="span", attr="@itemprop", val="address")}"
+    DESCRIPTION = f"//{XPATH_CONTAINS.format(element="div", attr="h3/text()", val="Beschrijving")}/div"
+    PHONE = f"//{XPATH_CONTAINS.format(element="a", attr="@data-ta", val="PhoneButtonClick")}"
+    WEBSITE = f"//{XPATH_CONTAINS.format(element="div", attr="@data-ta", val="WebsiteActionClick")}/@data-js-value"
+    EMAIL = f"//{XPATH_CONTAINS.format(element="div", attr="@data-ta", val="EmailActionClick")}/@data-js-value"
+    SOCIAL_MEDIA = f"//{XPATH_CONTAINS.format(element="div", attr="@class", val="flex flex-wrap social-media-wrap")}/a/@href"
     PAYMENT_OPTIONS = (
-        f"{XPATH_CONTAINS.format(element="div", attr="h3", val="Betaalmogelijkheden")}"
+        f"//{XPATH_CONTAINS.format(element="div", attr="h3", val="Betaalmogelijkheden")}"
         f"//li/@title"
     )
     CERTIFICATES = (
-        f"{XPATH_CONTAINS.format(element="div", attr="h3", val="Certificeringen")}"
+        f"//{XPATH_CONTAINS.format(element="div", attr="h3", val="Certificeringen")}"
         "//li/span/text()"
     )
     OTHER_INFORMATION_SECTION = (
-        f"{XPATH_CONTAINS.format(element="div", attr="h3", val="Overige informatie")}"
-        f"{XPATH_CONTAINS.format(element="div", attr="span/@class", val="tab__subtitle")}"
+        f"//{XPATH_CONTAINS.format(element="div", attr="h3", val="Overige informatie")}"
+        f"//{XPATH_CONTAINS.format(element="div", attr="span/@class", val="tab__subtitle")}"
     )
     OTHER_INFORMATION_SECTION_TITLE = "normalize-space(span)"
     OTHER_INFORMATION_SECTION_VALUE = "//li/span/text()"
     WORKING_DAY = (
-        f"{XPATH_CONTAINS.format(element="div", attr="h3", val="Openingsuren")}"
-        f"{XPATH_CONTAINS.format(element="div", attr="div/text()", val="{day}")}"
+        f"//{XPATH_CONTAINS.format(element="div", attr="h3", val="Openingsuren")}"
+        f"//{XPATH_CONTAINS.format(element="div", attr="div/text()", val="{day}")}"
     )
     MAX_PAGE = "/html/body/main/div/div/div[2]/div[1]/div[2]/div[2]/ul/li[8]/a/text()"  # TODO(Ivan Yordanov): Move away from absolute address
-    LISTING = f"{XPATH_CONTAINS.format(element="li", attr="@itemtype", val="http://schema.org/LocalBusiness")}/@data-href"
+    LISTING = f"//{XPATH_CONTAINS.format(element="li", attr="@itemtype", val="http://schema.org/LocalBusiness")}/@data-href"
     PARKING_INFO = (
-        f"{XPATH_CONTAINS.format(element="div", attr="@id", val="parking-info")}//li"
+        f"//{XPATH_CONTAINS.format(element="div", attr="@id", val="parking-info")}//li"
     )
     PARKING_INFO_SECTION_NAME = "normalize-space(span)"
     PARKING_INFO_SECTION_VALUE = "text()"
     ECONOMIC_DATA = (
-        f"{XPATH_CONTAINS.format(element="div", attr="@id", val="economic-data")}//li"
+        f"//{XPATH_CONTAINS.format(element="div", attr="@id", val="economic-data")}//li"
     )
     ECONOMIC_DATA_SECTION_NAME = "normalize-space(span)"
     ECONOMIC_DATA_SECTION_VALUE = "text()"
     LOGO_SRC = (
-        f"{XPATH_CONTAINS.format(element="img", attr="@data-yext", val="logo")}/@src"
+        f"//{XPATH_CONTAINS.format(element="img", attr="@data-yext", val="logo")}/@src"
     )
     PHOTO_SRC = (
-        f"{XPATH_CONTAINS.format(element="div", attr="@class", val="gallery flex flex-wrap")}"
-        f"{XPATH_CONTAINS.format(element="img", attr="@class", val="gallery__item")}"
+        f"//{XPATH_CONTAINS.format(element="div", attr="@class", val="gallery flex flex-wrap")}"
+        f"//{XPATH_CONTAINS.format(element="img", attr="@class", val="gallery__item")}"
         "/@src"
     )
 
 
 class GoudenGidsSpider(Spider):
+    """Spider that scrapes information from goudengids.nl.
+
+    :param category: Category to scrape.
+    :param max_page: Number of pages to scrape starting from page 1.
+    """
+
     name = "gouden_gids"
     start_urls = [START_URL]
 
@@ -85,6 +91,7 @@ class GoudenGidsSpider(Spider):
         super().__init__(name, **kwargs)
 
     def start_requests(self) -> Iterator[Request]:
+        """Generate starting point(s) for the spider."""
         yield Request(START_URL.format(category=self.category), self.parse)
 
     def parse(self, response: HtmlResponse, **kwargs) -> Iterator[Request]:
@@ -156,9 +163,11 @@ class GoudenGidsSpider(Spider):
         yield business_item
 
     def get_element_text(self, response: HtmlResponse, xpath: str) -> str:
+        """Return the text contained in the element towards which a provided xpath points."""
         return response.xpath(f"normalize-space({xpath})").get() or ""
 
     def get_element_texts(self, response: HtmlResponse, xpath: str) -> list[str]:
+        """Return the texts contained in the element towards which a provided xpath points."""
         return [el.strip() for el in response.xpath(xpath).getall()] or []
 
     def get_working_times(self, response: HtmlResponse) -> WorkingTimeItem:
@@ -187,6 +196,21 @@ class GoudenGidsSpider(Spider):
         section_name_xpath: str,
         section_value_xpath: str,
     ) -> dict[str, Any]:
+        """Return a mapping of section/ names and values.
+
+        Useful for a number of similar elements which contain separately
+        the name of a piece of information and the actual information, such as
+        provided services by the business, working times, etc.
+
+        :param response: Response object to select information from.
+        :param sections_xpath: XPath that points towards an element containing
+            a mapping-like structure
+        :param section_name_xpath: XPath that points to the elements containing
+            names/titles. Should start where `sections_xpath` ends.
+        :param section_value_xpath: XPath that points to the elements containing
+            the piece of information.
+        :return: Dictionary containing the corresponding data.
+        """
         sections = response.xpath(sections_xpath)
         return {
             section.xpath(section_name_xpath).get() or "": [
