@@ -23,7 +23,9 @@ class GoudenGidsXPaths(StrEnum):
     """Stores useful XPaths."""
 
     NAME = f"//{XPATH_CONTAINS.format(element="h1", attr="@itemprop", val="name")}"
-    LOCATION = f"//{XPATH_CONTAINS.format(element="span", attr="@itemprop", val="address")}"
+    LOCATION = (
+        f"//{XPATH_CONTAINS.format(element="span", attr="@itemprop", val="address")}"
+    )
     DESCRIPTION = f"//{XPATH_CONTAINS.format(element="div", attr="h3/text()", val="Beschrijving")}/div"
     PHONE = f"//{XPATH_CONTAINS.format(element="a", attr="@data-ta", val="PhoneButtonClick")}"
     WEBSITE = f"//{XPATH_CONTAINS.format(element="div", attr="@data-ta", val="WebsiteActionClick")}/@data-js-value"

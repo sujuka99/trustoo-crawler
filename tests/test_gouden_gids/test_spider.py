@@ -238,17 +238,49 @@ class TestGoudenGidsSpider:
     def test_xpath(self, response: HtmlResponse, xpath: str, expected: str):
         assert [el.strip() for el in response.xpath(xpath).getall()] == expected
 
-    def test_get_other_information(self, spider: GoudenGidsSpider):
-        parking_info = spider.get_other_information(
-            read_response_from_file(
-                Path(f"{RESPONSES_PATH}/backer_and_mckenzie.html"),
-                "https://www.goudengids.nl/nl/bedrijf/Amsterdam/L119193538/Baker+%26+McKenzie+Amsterdam+NV/",
+    @pytest.mark.parametrize(
+        (
+            "response",
+            "sections_xpath",
+            "section_name_xpath",
+            "section_value_xpath",
+            "expected",
+        ),
+        [
+            pytest.param(
+                LawyerResponse.BAKER_AND_MCKENZIE.value,
+                GoudenGidsXPaths.PARKING_INFO,
+                GoudenGidsXPaths.PARKING_INFO_SECTION_NAME,
+                GoudenGidsXPaths.PARKING_INFO_SECTION_VALUE,
+                {
+                    "Soort parking:": ["Voetgangerszone"],
+                    "Uren:": ["0:00-24:00"],
+                },
+                id="parking-info",
             ),
-            GoudenGidsXPaths.PARKING_INFO,
-            GoudenGidsXPaths.PARKING_INFO_SECTION_NAME,
-            GoudenGidsXPaths.PARKING_INFO_SECTION_VALUE,
+            pytest.param(
+                LawyerResponse.BAKER_AND_MCKENZIE.value,
+                GoudenGidsXPaths.OTHER_INFORMATION_SECTION,
+                GoudenGidsXPaths.OTHER_INFORMATION_SECTION_TITLE,
+                GoudenGidsXPaths.OTHER_INFORMATION_SECTION_VALUE,
+                {},
+                id="other-info",
+            ),
+        ],
+    )
+    def test_get_other_information(
+        self,
+        spider: GoudenGidsSpider,
+        response: HtmlResponse,
+        sections_xpath: str,
+        section_name_xpath: str,
+        section_value_xpath: str,
+        expected: dict[str, list[str]],
+    ):
+        result = spider.get_other_information(
+            response,
+            sections_xpath,
+            section_name_xpath,
+            section_value_xpath,
         )
-        assert parking_info == {
-            "Soort parking:": ["Voetgangerszone"],
-            "Uren:": ["0:00-24:00"],
-        }
+        assert result == expected

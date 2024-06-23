@@ -37,13 +37,15 @@ My entry to Trustoo's hiring challenge. Find its description [here](case_junior_
 - Add a CLI
 - Publish to PyPI
 - Publish a docker image with Splash auto starting to allow for an easier showcase.
+- Extensive documentation
+- Developer guide
 
 ### Discussion
 
 ###### Positive remarks
 
 - Scraper works well with lawyers, but also does well with the rest of the categories in Gouden Gids.
-- The code is well documented, formatted and linted.
+- The code is documented, formatted and linted.
 - A decent part of the code is covered by tests.
 
 ###### To be improved
@@ -52,6 +54,7 @@ My entry to Trustoo's hiring challenge. Find its description [here](case_junior_
 - Integration testing
 - Scraping dynamic content
 - Logging
+- Collection of "Overige Informatie" -- Currently broken
 
 ## Case 2
 
