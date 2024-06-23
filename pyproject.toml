@@ -33,7 +33,7 @@ reportIncompatibleMethodOverride = false
 [tool.ruff]
 output-format = "grouped"
 show-fixes = true
-target-version = "py310"
+target-version = "py312"
 extend-exclude = ["tests/*snapshots/*"]
 
 [tool.ruff.lint]
