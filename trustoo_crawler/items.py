@@ -2,6 +2,8 @@ from scrapy import Field, Item
 
 
 class WorkingTimeItem(Item):
+    """Item that contains the days of the week."""
+
     monday = Field()
     tuesday = Field()
     wednesday = Field()
@@ -12,6 +14,8 @@ class WorkingTimeItem(Item):
 
 
 class BusinessItem(Item):
+    """Item that holds all information about a business."""
+
     name = Field()
     location = Field()
     description = Field()

@@ -12,8 +12,9 @@ BOT_NAME = "trustoo_crawler"
 SPIDER_MODULES = ["trustoo_crawler.spiders"]
 NEWSPIDER_MODULE = "trustoo_crawler.spiders"
 
-SPLASH_URL = "http://localhost:8050"
+SPLASH_URL = "http://localhost:8050"  # The url at which scrapy can find Splash
 
+# Write to a csv file upon running a spider by default
 FEEDS = {"results.csv": {"format": "csv", "overwrite": True}}
 
 # set the Splash deduplication class
@@ -23,7 +24,7 @@ DUPEFILTER_CLASS = "scrapy_splash.SplashAwareDupeFilter"
 # USER_AGENT = "Mozilla"
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = False
+ROBOTSTXT_OBEY = False  # Gouden Gids doesn't want us to scrape it.
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 # CONCURRENT_REQUESTS = 32
@@ -31,7 +32,7 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 3  # No need to go fast for now, better lay low
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # CONCURRENT_REQUESTS_PER_IP = 16
@@ -57,6 +58,7 @@ SPIDER_MIDDLEWARES = {
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
+# Specify Splash middlewares
 DOWNLOADER_MIDDLEWARES = {
     "scrapy_splash.SplashCookiesMiddleware": 723,
     "scrapy_splash.SplashMiddleware": 725,
