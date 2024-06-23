@@ -39,6 +39,7 @@ My entry to Trustoo's hiring challenge. Find its description [here](case_junior_
 - Publish a docker image with Splash auto starting to allow for an easier showcase.
 - Extensive documentation
 - Developer guide
+- Module docstrings
 
 ### Discussion
 
