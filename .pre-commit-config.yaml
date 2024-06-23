@@ -29,3 +29,10 @@ repos:
         language: system
         types: [python]
         require_serial: true # run once for all files
+      - id: dprint
+        name: dprint
+        entry: dprint fmt
+        language: system
+        types: [markdown]
+        require_serial: true # run once for all files
+        pass_filenames: false
