@@ -8,14 +8,14 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 scrapy = "^2.11.2"
-scrapy-user-agents = "^0.1.1"  # Allows the spider to use properly spoofed agent-names and to also rotate them
-scrapy-splash = "^0.9.0"  # For scraping anything non-static
+scrapy-user-agents = "^0.1.1" # Allows the spider to use properly spoofed agent-names and to also rotate them
+scrapy-splash = "^0.9.0" # For scraping anything non-static
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.2.2"  # Unit testing
-ruff = "^0.4.9"  # Linting and formatting
-pyright = "^1.1.367"  # Static type checking
-pre-commit = "^3.7.1"  # Pre commit hooks
+pytest = "^8.2.2" # Unit testing
+ruff = "^0.4.9" # Linting and formatting
+pyright = "^1.1.367" # Static type checking
+pre-commit = "^3.7.1" # Pre commit hooks
 
 [tool.pyright]
 reportUnknownParameterType = "warning"

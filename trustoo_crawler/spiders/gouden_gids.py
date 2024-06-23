@@ -113,7 +113,9 @@ class GoudenGidsSpider(Spider):
     :param max_page: Number of pages to scrape starting from page 1.
     """
 
-    name = "gouden_gids"  # Name of the spider, seemed fitting to name it after the website
+    name = (
+        "gouden_gids"  # Name of the spider, seemed fitting to name it after the website
+    )
 
     # Overriding the object initialization to add parameters.
     # This way the user can provide as arguments the desired category
@@ -268,6 +270,7 @@ class GoudenGidsSpider(Spider):
             return cls.get_element_text(
                 response, GoudenGidsXPaths.WORKING_DAY.format(day=day)
             )
+
         # Note how this function returns a `scrapy.Item`, instead of
         # yielding it. This is important as the `WorkingTimeItem` is intended
         # to be just a part of the BusinessItem.

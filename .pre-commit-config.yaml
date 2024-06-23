@@ -1,7 +1,7 @@
 repos:
   - repo: local
     hooks:
-      - id: ruff-lint
+      - id: ruff-lint  # linting
         name: ruff-lint
         entry: ruff check
         args:
@@ -16,20 +16,20 @@ repos:
         language: system
         types_or: [python]
         require_serial: true # run once for all files
-      - id: ruff-format
+      - id: ruff-format  # formatting
         name: ruff-format
         entry: ruff format
         args: [--force-exclude, --config, pyproject.toml]
         language: system
         types_or: [python]
         require_serial: true # run once for all files
-      - id: pyright
+      - id: pyright  # type checking
         name: pyright
         entry: pyright
         language: system
         types: [python]
         require_serial: true # run once for all files
-      - id: dprint
+      - id: dprint  # TOML and Markdown formatting
         name: dprint
         entry: dprint fmt
         language: system
