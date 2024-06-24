@@ -18,7 +18,7 @@ PAGE_URL = "https://www.goudengids.nl/nl/zoeken/{category}/"  # The url shared b
 # I have (over)used the construction below, so it made sense to parametrize it and
 # store it in a constant
 # As of writing this comment, I have no more time left to change things up and
-# I just found out that this XPath does exactly do what I thought it did.
+# I just found out that this XPath doesn't exactly do what I thought it did.
 # This StackOverflow answer explains what happened:
 # https://stackoverflow.com/a/46516155/11610149
 XPATH_CONTAINS = (  # Find element that has a certain attribute of specific value
